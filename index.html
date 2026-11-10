@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OPERATION: BIRTHDAY — THE DARK KNIGHT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Share+Tech+Mono&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* =================================================================
+       GLOBAL RESETS & NOLAN CINEMATIC THEME
+       ================================================================= */
+    :root {
+      --bg-void: #05070a;
+      --bg-dark: #090c10;
+      --bg-surface: #0e131a;
+      --gold-accent: #c5a059;
+      --gold-glow: rgba(197, 160, 89, 0.35);
+      --bat-cyan: #4fc3f7;
+      --bat-blue: #1c2b3d;
+      --danger: #cf3a3a;
+      --border-subtle: rgba(197, 160, 89, 0.2);
+      --font-cinzel: 'Cinzel', serif;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-body: 'Montserrat', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-void);
+      color: #d1d5db;
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Ambient Canvas for Rain & Thunder */
+    #ambientCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Film Grain Overlay */
+    .grain-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 12;
+      opacity: 0.04;
+      background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+    }
+
+    /* Global Audio Controller */
+    #audioToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(14, 19, 26, 0.85);
+      border: 1px solid var(--border-subtle);
+      color: var(--gold-accent);
+      padding: 8px 16px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    #audioToggle:hover {
+      border-color: var(--gold-accent);
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
+
+    /* Global Mission Progress Bar */
+    .mission-hud {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: #94a3b8;
+      background: rgba(14, 19, 26, 0.85);
+      padding: 8px 16px;
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hud-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #334155;
+      transition: background 0.4s ease;
+    }
+    .hud-dot.active {
+      background: var(--gold-accent);
+      box-shadow: 0 0 8px var(--gold-accent);
+    }
+
+    /* Scenes Container */
+    .scene-viewport {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.98);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      display: none;
+    }
+    .scene-viewport.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      display: flex;
+    }
+
+    /* Primary Nolan Typography & Buttons */
+    h1.cinematic-title {
+      font-family: var(--font-cinzel);
+      font-size: clamp(1.8rem, 4.5vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      text-align: center;
+      color: #f1f5f9;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.9);
+      margin-bottom: 12px;
+    }
+    .sub-classified {
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+      letter-spacing: 4px;
+      color: var(--gold-accent);
+      text-transform: uppercase;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .bat-btn {
+      position: relative;
+      background: rgba(14, 19, 26, 0.9);
+      color: #e2e8f0;
+      font-family: var(--font-cinzel);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      padding: 16px 36px;
+      border: 1px solid var(--gold-accent);
+      text-transform: uppercase;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      margin: 10px;
+    }
+    .bat-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.25), transparent);
+      transition: left 0.6s ease;
+    }
+    .bat-btn:hover {
+      background: var(--gold-accent);
+      color: var(--bg-void);
+      box-shadow: 0 0 25px var(--gold-glow);
+    }
+    .bat-btn:hover::before {
+      left: 100%;
+    }
+
+    /* Bat-Signal SVG Icon Standard */
+    .bat-symbol-svg {
+      width: 48px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    /* =================================================================
+       SCENE 1: WELCOME TO GOTHAM
+       ================================================================= */
+    #scene1 {
+      text-align: center;
+      background: radial-gradient(circle at 50% 30%, rgba(28, 43, 61, 0.3) 0%, rgba(5, 7, 10, 0.95) 75%);
+    }
+    .skyline-silhouette {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(to top, #040507 40%, transparent 100%),
+        repeating-linear-gradient(90deg, #070a0f 0px, #070a0f 30px, #040507 30px, #040507 50px, #090e17 50px, #090e17 80px);
+      clip-path: polygon(
+        0% 100%, 0% 65%, 4% 65%, 4% 40%, 7% 40%, 7% 75%, 11% 75%, 11% 30%, 14% 30%, 14% 60%, 
+        18% 60%, 18% 20%, 20% 15%, 22% 20%, 22% 80%, 26% 80%, 26% 45%, 31% 45%, 31% 85%,
+        35% 85%, 35% 35%, 39% 35%, 39% 70%, 43% 70%, 43% 10%, 45% 5%, 47% 10%, 47% 75%,
+        52% 75%, 52% 50%, 57% 50%, 57% 80%, 63% 80%, 63% 25%, 68% 25%, 68% 65%,
+        73% 65%, 73% 40%, 78% 40%, 78% 85%, 83% 85%, 83% 30%, 86% 25%, 89% 30%, 89% 70%,
+        94% 70%, 94% 55%, 100% 55%, 100% 100%
+      );
+      opacity: 0.65;
+      pointer-events: none;
+    }
+    .bat-signal-projector {
+      position: absolute;
+      top: 12%;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(230, 245, 255, 0.85) 0%, rgba(79, 195, 247, 0.4) 40%, transparent 75%);
+      filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: signalPulse 6s ease-in-out infinite alternate;
+      cursor: pointer;
+    }
+    @keyframes signalPulse {
+      0% { opacity: 0.55; transform: scale(0.96) translate(-10px, 0); }
+      50% { opacity: 0.9; transform: scale(1.04) translate(10px, -5px); }
+      100% { opacity: 0.6; transform: scale(0.98) translate(0, 0); }
+    }
+    .bat-signal-inner-icon {
+      width: 140px;
+      height: 80px;
+      fill: #05070a;
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.9));
+    }
+
+    /* =================================================================
+       SCENE 2: CLASSIFIED TRANSMISSION (PASSWORD REQUIRED)
+       ================================================================= */
+    .terminal-box {
+      max-width: 600px;
+      width: 90%;
+      background: rgba(10, 14, 20, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-top: 3px solid var(--gold-accent);
+      padding: 35px 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .input-code-field {
+      width: 100%;
+      background: #06090e;
+      border: 1px solid #1e293b;
+      padding: 16px 20px;
+      color: var(--gold-accent);
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      outline: none;
+      margin-bottom: 15px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .input-code-field:focus {
+      border-color: var(--gold-accent);
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
+    .feedback-msg {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      min-height: 24px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .hint-trigger {
+      display: inline-block;
+      font-size: 0.7rem;
+      color: #64748b;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 10px;
+    }
+
+    /* =================================================================
+       SCENE 3: THE BATCAVE CONTROL ROOM
+       ================================================================= */
+    .batcave-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      width: 95%;
+      margin: 30px 0;
+    }
+    .terminal-card {
+      background: rgba(14, 19, 26, 0.85);
+      border: 1px solid rgba(197, 160, 89, 0.15);
+      padding: 24px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 170px;
+    }
+    .terminal-card:hover {
+      border-color: var(--gold-accent);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 15px var(--gold-glow);
+      background: rgba(22, 30, 42, 0.95);
+    }
+    .terminal-card .card-title {
+      font-family: var(--font-cinzel);
+      font-size: 1rem;
+      letter-spacing: 2px;
+      color: #f1f5f9;
+      margin-top: 15px;
+    }
+    .terminal-card .card-sub {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: #94a3b8;
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+
+    /* Modal / Overlay for Terminals */
+    .bat-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(3, 5, 8, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .bat-modal.open {
+      display: flex;
+    }
+    .bat-modal-content {
+      background: #0c1017;
+      border: 1px solid var(--gold-accent);
+      max-width: 580px;
+      width: 100%;
+      padding: 35px 30px;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.95);
+      animation: modalDrop 0.4s ease-out;
+    }
+    @keyframes modalDrop {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .close-modal-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .close-modal-btn:hover { color: var(--gold-accent); }
+
+    /* =================================================================
+       SCENE 4: DETECTIVE MODE (3 CHALLENGES)
+       ================================================================= */
+    .detective-container {
+      max-width: 750px;
+      width: 95%;
+      background: rgba(10, 14, 20, 0.95);
+      border: 1px solid var(--border-subtle);
+      padding: 35px;
+      position: relative;
+    }
+    .detective-stepper {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 30px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    .detective-step {
+      color: #475569;
+      position: relative;
+    }
+    .detective-step.active {
+      color: var(--gold-accent);
+      font-weight: bold;
+    }
+    .detective-step.done {
+      color: #38bdf8;
+    }
+    .symbol-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 25px 0;
+    }
+    .symbol-choice-card {
+      border: 1px solid #1e293b;
+      background: #070a0e;
+      padding: 25px 15px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .symbol-choice-card:hover {
+      border-color: var(--bat-cyan);
+      box-shadow: 0 0 15px rgba(79, 195, 247, 0.2);
+    }
+    /* Hidden Object Canvas for Challenge 3 */
+    #hiddenObjectArea {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      background: radial-gradient(#15202b, #070b10);
+      border: 1px solid #233547;
+      margin: 20px 0;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    /* =================================================================
+       SCENE 5: MINI-GAME (ESCAPE THROUGH GOTHAM)
+       ================================================================= */
+    .game-wrapper {
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    #gameCanvas {
+      background: #070a0e;
+      border: 2px solid var(--border-subtle);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+      width: 100%;
+      height: 380px;
+      display: block;
+      touch-action: none;
+    }
+    .game-controls-hint {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .touch-controls {
+      display: none;
+      width: 100%;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .touch-btn {
+      flex: 1;
+      padding: 16px;
+      background: #111822;
+      border: 1px solid var(--gold-accent);
+      color: var(--gold-accent);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* =================================================================
+       SCENE 6: ARSENAL PENALTY SHOOTOUT
+       ================================================================= */
+    .stadium-container {
+      max-width: 650px;
+      width: 95%;
+      background: radial-gradient(ellipse at center, #0f1c24 0%, #06090e 80%);
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      padding: 30px;
+      text-align: center;
+      position: relative;
+    }
+    .goal-post {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      border-top: 8px solid #ffffff;
+      border-left: 8px solid #ffffff;
+      border-right: 8px solid #ffffff;
+      margin: 20px auto 30px;
+      background: repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 15px, transparent 15px, transparent 30px),
+                  repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 15px, transparent 15px, transparent 30px);
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+    .goalkeeper {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 90px;
+      transition: all 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .gk-head {
+      width: 20px; height: 20px; background: #e2e8f0; border-radius: 50%;
+    }
+    .gk-body {
+      width: 32px; height: 42px; background: #e11d48; margin-top: 3px; border-radius: 4px;
+    }
+    .gk-legs {
+      width: 24px; height: 25px; background: #020617;
+    }
+    .ball {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 26px;
+      height: 26px;
+      background: radial-gradient(circle at 35% 35%, #fff 0%, #cbd5e1 50%, #475569 100%);
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+      transition: all 0.5s ease-out;
+    }
+    .shoot-targets {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+      gap: 15px;
+    }
+
+    /* =================================================================
+       SCENE 7: THE MEMORY ARCHIVE (CLASSIFIED CONFIDENTIAL DOSSIERS)
+       ================================================================= */
+    .archive-container {
+      max-width: 850px;
+      width: 95%;
+      margin: 0 auto;
+    }
+    .dossier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 25px 0;
+    }
+    .dossier-card {
+      background: rgba(14, 20, 28, 0.95);
+      border: 1px solid rgba(197, 160, 89, 0.2);
+      padding: 22px;
+      cursor: pointer;
+      position: relative;
+      border-left: 4px solid var(--gold-accent);
+      transition: all 0.3s ease;
+    }
+    .dossier-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px var(--gold-glow);
+    }
+    .classified-stamp {
+      display: inline-block;
+      border: 2px solid var(--danger);
+      color: var(--danger);
+      padding: 3px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      transform: rotate(-3deg);
+      margin-bottom: 12px;
+    }
+    .redacted-bar {
+      display: inline-block;
+      background: #334155;
+      color: transparent;
+      user-select: none;
+      padding: 0 4px;
+      border-radius: 2px;
+    }
+
+    /* =================================================================
+       SCENE 8: FINAL REVEAL & COMPLETE PERSONAL LETTER
+       ================================================================= */
+    .final-reveal-wrapper {
+      max-width: 780px;
+      width: 95%;
+      text-align: center;
+      margin: 0 auto;
+      padding-bottom: 60px;
+    }
+    .final-skyline-bg {
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    /* THE SINGLE STRICT PHOTOGRAPH CONTAINER */
+    .siddharth-portrait-frame {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      margin: 30px auto;
+      border-radius: 50%;
+      padding: 7px;
+      background: linear-gradient(135deg, var(--gold-accent), #0f172a, var(--gold-accent));
+      box-shadow: 0 0 40px rgba(197, 160, 89, 0.4), inset 0 0 25px rgba(0,0,0,0.8);
+      animation: heroGlow 4s infinite alternate ease-in-out;
+    }
+    @keyframes heroGlow {
+      0% { box-shadow: 0 0 25px rgba(197, 160, 89, 0.3); }
+      100% { box-shadow: 0 0 50px rgba(197, 160, 89, 0.7); }
+    }
+    .siddharth-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      background: #0f141c;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .placeholder-fallback {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #0b0f17;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-accent);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 15px;
+      border: 1px dashed var(--gold-accent);
+    }
+
+    /* Cinematic Sequential Lines */
+    .sequence-line {
+      font-family: var(--font-cinzel);
+      font-size: clamp(1rem, 2.5vw, 1.45rem);
+      letter-spacing: 5px;
+      margin: 14px 0;
+      color: #94a3b8;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.8s ease;
+    }
+    .sequence-line.highlight {
+      color: var(--gold-accent);
+      font-weight: 700;
+      font-size: clamp(1.4rem, 3.8vw, 2.3rem);
+    }
+    .sequence-line.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Complete Personal Letter Container */
+    .letter-envelope {
+      margin-top: 50px;
+      background: rgba(11, 15, 22, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-top: 3px solid var(--gold-accent);
+      border-bottom: 3px solid var(--gold-accent);
+      padding: 45px 35px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.95);
+      text-align: left;
+      position: relative;
+    }
+    .letter-salutation {
+      font-family: var(--font-cinzel);
+      font-size: 1.5rem;
+      color: var(--gold-accent);
+      letter-spacing: 3px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+      padding-bottom: 12px;
+    }
+    .letter-prominent-callout {
+      font-family: var(--font-cinzel);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 4px;
+      margin: 30px 0 15px;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
+    .letter-body-p {
+      font-family: var(--font-body);
+      font-size: 1.02rem;
+      line-height: 1.85;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Easter Eggs Notification Drawer */
+    #eggAlert {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(14, 19, 26, 0.95);
+      border: 1px solid var(--bat-cyan);
+      color: #e0f2fe;
+      padding: 12px 25px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      z-index: 5000;
+      transition: bottom 0.4s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+      pointer-events: none;
+    }
+    #eggAlert.show {
+      bottom: 30px;
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 768px) {
+      .touch-controls { display: flex; }
+      .letter-envelope { padding: 25px 20px; }
+      .mission-hud { font-size: 0.65rem; padding: 6px 10px; }
+      #audioToggle { font-size: 0.65rem; padding: 6px 10px; }
+      .terminal-box { padding: 25px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Rain & Thunder Canvas -->
+  <canvas id="ambientCanvas"></canvas>
+  <div class="grain-overlay"></div>
+
+  <!-- Persistent Sound Toggle Button -->
+  <button id="audioToggle" aria-label="Toggle Atmosphere Audio">
+    <span id="audioStatusDot" style="width:8px; height:8px; border-radius:50%; background:#cf3a3a; display:inline-block;"></span>
+    <span id="audioLabel">AUDIO: OFF</span>
+  </button>
+
+  <!-- Persistent Mission HUD -->
+  <div class="mission-hud">
+    <div style="font-weight:bold; color:var(--gold-accent);">PROTOCOL</div>
+    <div class="hud-dot active" id="dot1" title="Gotham Entry"></div>
+    <div class="hud-dot" id="dot2" title="Transmission Access"></div>
+    <div class="hud-dot" id="dot3" title="Batcave Terminals"></div>
+    <div class="hud-dot" id="dot4" title="Detective Solved"></div>
+    <div class="hud-dot" id="dot5" title="Pursuit Complete"></div>
+    <div class="hud-dot" id="dot6" title="Arsenal Shootout"></div>
+    <div class="hud-dot" id="dot7" title="Archives"></div>
+    <div class="hud-dot" id="dot8" title="Final Reveal"></div>
+  </div>
+
+  <!-- Easter Egg Notification Banner -->
+  <div id="eggAlert">CLASSIFIED EASTER EGG UNLOCKED</div>
+
+  <!-- =================================================================
+       SCENE 1: OPENING SCENE — WELCOME TO GOTHAM
+       ================================================================= -->
+  <section class="scene-viewport active" id="scene1">
+    <div class="bat-signal-projector" id="interactiveSignal" title="Easter Egg: Click the Sky Projector">
+      <svg class="bat-signal-inner-icon" viewBox="0 0 24 24">
+        <path d="M12 2C10.5 4 8.5 5 6.5 5C4 5 2 6 2 8C2 12 6.5 16 12 22C17.5 16 22 12 22 8C22 6 20 5 17.5 5C15.5 5 13.5 4 12 2M8.5 11.5C9 10.5 10.5 10 12 10C13.5 10 15 10.5 15.5 11.5C14.5 12.5 13.5 13 12 13C10.5 13 9.5 12.5 8.5 11.5Z"/>
+      </svg>
+    </div>
+    <div class="skyline-silhouette"></div>
+
+    <div style="z-index: 20; position:relative;">
+      <p class="sub-classified">RESTRICTED FREQUENCY // 11.11.2026</p>
+      <h1 class="cinematic-title">THE CITY NEEDS ITS HERO.</h1>
+      <p style="font-family: var(--font-mono); color: #94a3b8; max-width: 500px; margin: 0 auto 30px; letter-spacing: 1px;">
+        Gotham is dark, quiet, and waiting. A transmission has been encrypted specifically for Siddharth.
+      </p>
+      <button class="bat-btn" id="enterGothamBtn">ENTER GOTHAM</button>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCENE 2: CLASSIFIED TRANSMISSION — PASSWORD REQUIRED
+       ================================================================= -->
+  <section class="scene-viewport" id="scene2">
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <span>SECURITY LEVEL: WAYNE ENTERPRISES DEFENCE</span>
+        <span>SYS.STATUS: LOCKED</span>
+      </div>
+      <p class="sub-classified" style="text-align: left; margin-bottom: 15px;">SECURE CLEARANCE CODE REQUIRED</p>
+      <p style="font-family: var(--font-body); font-size: 0.9rem; color: #94a3b8; line-height: 1.6; margin-bottom: 25px;">
+        Access to Operation Birthday is strictly restricted. Only Gotham's protector holds the bypass key.
+      </p>
+
+      <form id="passwordForm" onsubmit="return false;">
+        <input type="text" id="passInput" class="input-code-field" placeholder="ENTER ACCESS CODE" autocomplete="off" autocorrect="off" spellcheck="false" />
+        <div id="passwordFeedback" class="feedback-msg"></div>
+        <button type="submit" class="bat-btn" style="width:100%; margin:0 0 10px 0;">CONFIRM IDENTITY</button>
+      </form>
+      <div style="text-align: center;">
+        <span class="hint-trigger" id="hintTriggerBtn">REQUEST TACTICAL HINT</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCENE 3: THE BATCAVE — INTERACTIVE CONTROL ROOM
+       ================================================================= -->
+  <section class="scene-viewport" id="scene3">
+    <p class="sub-classified">CENTRAL BATCOMPUTER // ACTIVE SESSION</p>
+    <h1 class="cinematic-title" style="font-size: 2.2rem;">THE BATCAVE TERMINALS</h1>
+    <p style="font-family: var(--font-mono); font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">
+      INTERACT WITH SUB-SYSTEMS TO SYNCHRONISE MISSION DATA
+    </p>
+
+    <div class="batcave-grid">
+      <!-- Terminal 1: Bat-Signal -->
+      <div class="terminal-card" onclick="openTerminal('signal')">
+        <svg class="bat-symbol-svg" style="color:var(--bat-cyan);" viewBox="0 0 24 24"><path d="M12 2C10.5 4 8.5 5 6.5 5C4 5 2 6 2 8C2 12 6.5 16 12 22C17.5 16 22 12 22 8C22 6 20 5 17.5 5C15.5 5 13.5 4 12 2Z"/></svg>
+        <div class="card-title">THE BAT-SIGNAL</div>
+        <div class="card-sub">SKYSCRAPER LIGHT BEACON</div>
+      </div>
+
+      <!-- Terminal 2: Arsenal -->
+      <div class="terminal-card" onclick="openTerminal('arsenal')">
+        <svg class="bat-symbol-svg" style="color:#ef4444;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 7v10M7 12h10"/></svg>
+        <div class="card-title">THE ARSENAL TERMINAL</div>
+        <div class="card-sub">TACTICAL PHILOSOPHY // NORTH LONDON</div>
+      </div>
+
+      <!-- Terminal 3: Coffee -->
+      <div class="terminal-card" onclick="openTerminal('coffee')">
+        <svg class="bat-symbol-svg" style="color:var(--gold-accent);" viewBox="0 0 24 24"><path d="M4 19h16v2H4zM6 3h12v11a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V3z"/></svg>
+        <div class="card-title">THE COFFEE TERMINAL</div>
+        <div class="card-sub">FUEL SYSTEM // SUB-ZERO</div>
+      </div>
+
+      <!-- Terminal 4: Garage -->
+      <div class="terminal-card" onclick="openTerminal('garage')">
+        <svg class="bat-symbol-svg" style="color:#a855f7;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="6" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 11l2-5h10l2 5"/></svg>
+        <div class="card-title">THE GARAGE</div>
+        <div class="card-sub">DAILY MOTOR &amp; BAVARIAN BEAST</div>
+      </div>
+
+      <!-- Terminal 5: Classified File -->
+      <div class="terminal-card" onclick="openTerminal('classified')">
+        <svg class="bat-symbol-svg" style="color:#38bdf8;" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div class="card-title">CLASSIFIED DOSSIER</div>
+        <div class="card-sub">SUBJECT: SIDDHARTH</div>
+      </div>
+    </div>
+
+    <button class="bat-btn" id="proceedToDetectiveBtn" style="margin-top: 20px;">PROCEED TO DETECTIVE MODE &rarr;</button>
+  </section>
+
+  <!-- Modals for Batcave Terminals -->
+  <div class="bat-modal" id="terminalModal">
+    <div class="bat-modal-content">
+      <button class="close-modal-btn" onclick="closeModal()">&times; CLOSE</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       SCENE 4: DETECTIVE MODE — SOLVE THE CASE
+       ================================================================= -->
+  <section class="scene-viewport" id="scene4">
+    <p class="sub-classified">WAYNE FORENSIC REASONING SYSTEM</p>
+    <h1 class="cinematic-title" style="font-size: 2.2rem;">DETECTIVE MODE</h1>
+
+    <div class="detective-container">
+      <div class="detective-stepper">
+        <span class="detective-step active" id="step1Indicator">01. CREST VERIFICATION</span>
+        <span class="detective-step" id="step2Indicator">02. CIPHER RECONSTRUCTION</span>
+        <span class="detective-step" id="step3Indicator">03. THERMAL RECON</span>
+      </div>
+
+      <!-- Challenge 1 -->
+      <div id="challenge1Box">
+        <p style="font-family: var(--font-mono); color: #cbd5e1; margin-bottom: 15px;">
+          CRIME SCENE ANALYSIS: Identify the genuine Nolan-era Dark Knight insignia to calibrate optic sensors.
+        </p>
+        <div class="symbol-choice-grid">
+          <div class="symbol-choice-card" onclick="solveDetectiveChallenge1(1)">
+            <svg class="bat-symbol-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4v16"/></svg>
+            <span style="font-family: var(--font-mono); font-size:0.75rem; margin-top:10px; color:#64748b;">CREST ALPHA</span>
+          </div>
+          <div class="symbol-choice-card" onclick="solveDetectiveChallenge1(2)">
+            <!-- Genuine Nolan Batman Symbol -->
+            <svg class="bat-symbol-svg" viewBox="0 0 24 24" style="color:var(--gold-accent);"><path d="M12 4c-.7 1.3-1.6 2.3-3 2.7-1 .3-2 .3-3 .1 1 1.4 2.2 2.6 3.8 3.3.4.2.8.3 1.2.4-1.2.6-2.5 1-3.9 1.1 1.5 1.5 3.3 2.5 5.4 3 .3.1.6.1.9.1.3 0 .6 0 .9-.1 2.1-.5 3.9-1.5 5.4-3-1.4-.1-2.7-.5-3.9-1.1.4-.1.8-.2 1.2-.4 1.6-.7 2.8-1.9 3.8-3.3-1 .2-2 .2-3-.1-1.4-.4-2.3-1.4-3-2.7z"/></svg>
+            <span style="font-family: var(--font-mono); font-size:0.75rem; margin-top:10px; color:var(--gold-accent);">CREST BETA</span>
+          </div>
+          <div class="symbol-choice-card" onclick="solveDetectiveChallenge1(3)">
+            <svg class="bat-symbol-svg" viewBox="0 0 24 24"><path d="M4 12l8-8 8 8-8 8z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <span style="font-family: var(--font-mono); font-size:0.75rem; margin-top:10px; color:#64748b;">CREST GAMMA</span>
+          </div>
+        </div>
+        <div id="detectiveFeedback1" class="feedback-msg"></div>
+      </div>
+
+      <!-- Challenge 2 -->
+      <div id="challenge2Box" style="display:none;">
+        <p style="font-family: var(--font-mono); color: #cbd5e1; margin-bottom: 12px;">
+          DECRYPT TRANSMISSION: The cipher shifts letter values backward by 1.
+        </p>
+        <div style="background:#070a0f; padding:15px; font-family:var(--font-mono); color:var(--bat-cyan); letter-spacing:4px; font-size:1.1rem; text-align:center; margin-bottom:15px; border:1px solid #1e293b;">
+          CIPHER TEXT: "OJHIU"
+        </div>
+        <input type="text" id="cipherInput" class="input-code-field" placeholder="DECRYPTED WORD (5 LETTERS)" maxlength="5" />
+        <button class="bat-btn" onclick="solveDetectiveChallenge2()" style="width:100%; margin:0 0 10px 0;">VERIFY DECRYPTION</button>
+        <div id="detectiveFeedback2" class="feedback-msg"></div>
+      </div>
+
+      <!-- Challenge 3 -->
+      <div id="challenge3Box" style="display:none;">
+        <p style="font-family: var(--font-mono); color: #cbd5e1; margin-bottom: 10px;">
+          SECTOR SCAN: Locate the hidden Batarang concealed within the Gotham rooftop quadrant.
+        </p>
+        <div id="hiddenObjectArea" onclick="detectiveObjectClick(event)">
+          <!-- Decoy elements -->
+          <div style="position:absolute; top:20%; left:15%; color:#334155; font-family:var(--font-mono); font-size:0.7rem;">VENT_A4</div>
+          <div style="position:absolute; bottom:30%; right:25%; color:#334155; font-family:var(--font-mono); font-size:0.7rem;">ANTENNA_RELAY</div>
+          <!-- Hidden Target Batarang -->
+          <div id="hiddenTargetBatarang" style="position:absolute; top:42%; left:68%; width:32px; height:20px; opacity:0.35; transition:0.3s; cursor:pointer;" title="Concealed Weapon">
+            <svg viewBox="0 0 24 24" style="fill:var(--gold-accent); width:100%; height:100%;"><path d="M12 2C10.5 4 8.5 5 6.5 5C4 5 2 6 2 8C2 12 6.5 16 12 22C17.5 16 22 12 22 8C22 6 20 5 17.5 5C15.5 5 13.5 4 12 2Z"/></svg>
+          </div>
+        </div>
+        <div id="detectiveFeedback3" class="feedback-msg">SCANNING QUADRANT... CLICK TARGET TO SECURE</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCENE 5: MINI-GAME — ESCAPE THROUGH GOTHAM
+       ================================================================= -->
+  <section class="scene-viewport" id="scene5">
+    <p class="sub-classified">TACTICAL EVASION PROTOCOL</p>
+    <h1 class="cinematic-title" style="font-size: 2.2rem;">ESCAPE THROUGH GOTHAM</h1>
+    <p style="font-family: var(--font-mono); font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;">
+      NAVIGATE THE TUMBLER. AVOID OBSTACLES. COLLECT 5 MISSION TOKENS.
+    </p>
+
+    <div class="game-wrapper">
+      <div style="display:flex; justify-content:space-between; width:100%; font-family:var(--font-mono); font-size:0.85rem; color:var(--gold-accent); margin-bottom:8px;">
+        <span id="gameScoreLabel">TOKENS: 0 / 5</span>
+        <span id="gameSpeedLabel">SPEED: 100 KM/H</span>
+      </div>
+      <canvas id="gameCanvas" width="480" height="360"></canvas>
+      <div class="game-controls-hint">
+        <span>[ DESKTOP: LEFT / RIGHT ARROWS or A / D ]</span>
+        <span>[ MOBILE: ON-SCREEN BUTTONS ]</span>
+      </div>
+      <div class="touch-controls">
+        <button class="touch-btn" id="touchLeftBtn">&larr; STEER LEFT</button>
+        <button class="touch-btn" id="touchRightBtn">STEER RIGHT &rarr;</button>
+      </div>
+      <button class="bat-btn" id="startPursuitBtn" style="margin-top:20px; width:100%;">START ENGINE / REENGAGE</button>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCENE 6: HIDDEN ARSENAL PENALTY SHOOTOUT
+       ================================================================= -->
+  <section class="scene-viewport" id="scene6">
+    <p class="sub-classified">TACTICAL CALIBRATION // EMIRATES STADIUM PROTOCOL</p>
+    <h1 class="cinematic-title" style="font-size: 2.2rem;">THE ARSENAL PENALTY SHOOTOUT</h1>
+    <p style="font-family: var(--font-mono); font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;">
+      SCORE AT LEAST 2 PENALTIES TO COMPLETE THE TACTICAL STRIKE.
+    </p>
+
+    <div class="stadium-container">
+      <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); color:var(--gold-accent); margin-bottom:10px;">
+        <span id="shootAttemptsLabel">ATTEMPT: 1 / 3</span>
+        <span id="shootScoreLabel">GOALS: 0</span>
+      </div>
+
+      <div class="goal-post">
+        <div class="goalkeeper" id="gkElement">
+          <div class="gk-head"></div>
+          <div class="gk-body"></div>
+          <div class="gk-legs"></div>
+        </div>
+        <div class="ball" id="shootBall"></div>
+      </div>
+
+      <div id="shootFeedback" class="feedback-msg">CHOOSE YOUR TARGET ANGLE</div>
+
+      <div class="shoot-targets" id="shootTargetsContainer">
+        <button class="bat-btn" style="flex:1; padding:12px 5px;" onclick="takePenalty('left')">LEFT CORNER</button>
+        <button class="bat-btn" style="flex:1; padding:12px 5px;" onclick="takePenalty('center')">CHIP CENTRE</button>
+        <button class="bat-btn" style="flex:1; padding:12px 5px;" onclick="takePenalty('right')">RIGHT TOP CORNER</button>
+      </div>
+
+      <!-- Shootout Reveal Message -->
+      <div id="arsenalQuoteReveal" style="display:none; margin-top:25px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+        <h3 style="font-family:var(--font-cinzel); font-size:1.25rem; color:var(--gold-accent); margin-bottom:10px;">
+          “ONE CLUB. ONE PASSION. ANOTHER YEAR OF GREATNESS.”
+        </h3>
+        <p style="font-family:var(--font-mono); font-size:0.85rem; color:#cbd5e1; margin-bottom:20px;">
+          "When you love something, you protect the standards every day." — The Mikel Arteta Doctrine.
+        </p>
+        <button class="bat-btn" onclick="goToScene(7)">ACCESS MEMORY ARCHIVE &rarr;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCENE 7: THE MEMORY ARCHIVE (CLASSIFIED DOSSIERS - STRICTLY NO PHOTOS)
+       ================================================================= -->
+  <section class="scene-viewport" id="scene7">
+    <p class="sub-classified">RESTRICTED DOSSIER VAULT // DECLASSIFIED</p>
+    <h1 class="cinematic-title" style="font-size: 2.2rem;">THE MEMORY ARCHIVE</h1>
+    <p style="font-family: var(--font-mono); font-size: 0.85rem; color: #94a3b8; text-align:center; max-width:600px; margin-bottom:25px;">
+      CONFIDENTIAL LOGS COMPILED OVER THE YEARS. SELECT A DOSSIER TO READ DECLASSIFIED RECORDS.
+    </p>
+
+    <div class="archive-container">
+      <div class="dossier-grid">
+        <!-- Dossier 1 -->
+        <div class="dossier-card" onclick="viewArchiveLog(1)">
+          <span class="classified-stamp">TOP SECRET</span>
+          <h3 style="font-family:var(--font-cinzel); font-size:1rem; color:#f1f5f9; margin-bottom:6px;">LOG #1989: ORIGINS</h3>
+          <p style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">
+            A key operative enters the timeline. Destination Gotham. Character traits: Unshakable grit.
+          </p>
+        </div>
+
+        <!-- Dossier 2 -->
+        <div class="dossier-card" onclick="viewArchiveLog(2)">
+          <span class="classified-stamp">DEPT: SURVEILLANCE</span>
+          <h3 style="font-family:var(--font-cinzel); font-size:1rem; color:#f1f5f9; margin-bottom:6px;">LOG #0400: THE DAILY COMMUTE</h3>
+          <p style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">
+            Hyundai Aura surveillance log. Hands steady, highway playlist active, shared glances noted.
+          </p>
+        </div>
+
+        <!-- Dossier 3 -->
+        <div class="dossier-card" onclick="viewArchiveLog(3)">
+          <span class="classified-stamp">PRIORITY INTEL</span>
+          <h3 style="font-family:var(--font-cinzel); font-size:1rem; color:#f1f5f9; margin-bottom:6px;">LOG #0007: AGENT CODEC</h3>
+          <p style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">
+            Transmission style: Secret Agent. Words brief, presence monumental, devotion undeniable.
+          </p>
+        </div>
+      </div>
+
+      <div id="archiveLogDisplay" style="background:#090d14; border:1px solid #1e293b; padding:25px; margin:20px 0; display:none;">
+        <h4 id="archiveLogTitle" style="font-family:var(--font-cinzel); color:var(--gold-accent); margin-bottom:10px;"></h4>
+        <p id="archiveLogText" style="font-family:var(--font-mono); font-size:0.85rem; line-height:1.8; color:#cbd5e1;"></p>
+      </div>
+
+      <div style="text-align:center; margin-top:25px;">
+        <button class="bat-btn" onclick="goToScene(8)">INITIATE FINAL TRANSMISSION &rarr;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCENE 8: FINAL TRANSMISSION — THE BIRTHDAY REVEAL
+       ================================================================= -->
+  <section class="scene-viewport" id="scene8">
+    <div class="final-reveal-wrapper">
+      <div class="final-skyline-bg">
+        <svg class="bat-symbol-svg" style="width:80px; height:45px; color:var(--gold-accent); margin-bottom:10px;" viewBox="0 0 24 24">
+          <path d="M12 2C10.5 4 8.5 5 6.5 5C4 5 2 6 2 8C2 12 6.5 16 12 22C17.5 16 22 12 22 8C22 6 20 5 17.5 5C15.5 5 13.5 4 12 2Z"/>
+        </svg>
+      </div>
+
+      <!-- Sequential Final Sentences -->
+      <div id="seq1" class="sequence-line">ALL MISSIONS COMPLETED.</div>
+      <div id="seq2" class="sequence-line">EVERY HERO HAS A STORY.</div>
+      <div id="seq3" class="sequence-line">AND THIS ONE IS WORTH CELEBRATING.</div>
+
+      <!-- THE SINGLE PERMITTED PHOTOGRAPH OF SIDDHARTH -->
+      <div class="siddharth-portrait-frame" id="heroPhotoWrapper">
+        <img id="siddharthPhoto" class="siddharth-img" src="" alt="Siddharth - The Dark Knight" onerror="handlePhotoFallback()" />
+        <div id="photoPlaceholder" class="placeholder-fallback" style="display:none;">
+          <svg style="width:36px; height:36px; margin-bottom:8px; fill:var(--gold-accent);" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <div>SIDDHARTH</div>
+          <div style="font-size:0.6rem; opacity:0.7; margin-top:4px;">11.11.2026</div>
+        </div>
+      </div>
+
+      <div id="seq4" class="sequence-line">THE MAN HIMSELF.</div>
+      <div id="seq5" class="sequence-line highlight">HAPPY BIRTHDAY, SIDDHARTH.</div>
+      <div id="seq6" class="sequence-line">1989 — A YEAR THAT GAVE THE WORLD YOU.</div>
+      <div id="seq7" class="sequence-line" style="color:#f1f5f9; font-weight:600;">THE WORLD IS BETTER WITH YOU IN IT.</div>
+
+      <!-- THE PERSONAL LETTER (EXACT WORDS RENDERED) -->
+      <div class="letter-envelope" id="personalLetterCard" style="display:none;">
+        <div class="letter-salutation">To The One,</div>
+        
+        <p class="letter-body-p">
+          Gotham has Batman,but I have you.No cape,no batmobile-just big dreams,stubborn determination,an iced americano and occasionally the communication skills of a secret agent.
+        </p>
+
+        <div class="letter-prominent-callout">My knight</div>
+
+        <p class="letter-body-p">
+          You don’t need a cape or a mask to be my hero. You are my hero in the quiet moments: when you hold my hand during a drive, when you make me laugh after an exhausting day, and when you look at me with that gentle smile that only I get to see.
+        </p>
+
+        <p class="letter-body-p">
+          Whatever challenges this world or Gotham throws our way, remember this: you never have to face them alone again. I am right here by your side.
+        </p>
+      </div>
+
+      <!-- Replay Controller -->
+      <div style="margin-top:50px;">
+        <button class="bat-btn" onclick="replayEntireMission()">&#8634; REPLAY OPERATION: BIRTHDAY</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       APPLICATION LOGIC & CUSTOM AUDIO SYNTHESIS
+       ================================================================= -->
+  <script>
+    /* =================================================================
+       CONFIGURATION SETTINGS (EDIT SIDDHARTH'S PHOTO URL HERE)
+       ================================================================= */
+    const CONFIG = {
+      // Put your actual photograph path or URL here: e.g. "siddharth.jpg" or "images/siddharth.png"
+      siddharthPhotoUrl: "siddharth.jpg",
+      heroName: "Siddharth",
+      birthDate: "11 November 2026",
+      birthYear: "1989",
+      correctPassword: "BATMAN"
+    };
+
+    /* Initialize the single photograph */
+    const heroImgEl = document.getElementById("siddharthPhoto");
+    if (CONFIG.siddharthPhotoUrl && CONFIG.siddharthPhotoUrl.trim() !== "") {
+      heroImgEl.src = CONFIG.siddharthPhotoUrl;
+    } else {
+      handlePhotoFallback();
+    }
+
+    function handlePhotoFallback() {
+      heroImgEl.style.display = "none";
+      document.getElementById("photoPlaceholder").style.display = "flex";
+    }
+
+    /* =================================================================
+       SYNTHESIZED WEB AUDIO API SYSTEM
+       Atmospheric dark drone, rain noise, thunder, Bat-signal pulses,
+       beeps, penalty kick whoosh, goal sounds (No external files needed).
+       ================================================================= */
+    class GothamAudioManager {
+      constructor() {
+        this.ctx = null;
+        this.isMuted = true;
+        this.droneOsc1 = null;
+        this.droneOsc2 = null;
+        this.rainSource = null;
+        this.gainMaster = null;
+        this.gainRain = null;
+        this.gainDrone = null;
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+
+        this.gainMaster = this.ctx.createGain();
+        this.gainMaster.gain.setValueAtTime(0.7, this.ctx.currentTime);
+        this.gainMaster.connect(this.ctx.destination);
+
+        // Rain generator (Pink/Brown noise filter)
+        const bufferSize = this.ctx.sampleRate * 2;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          output[i] = (lastOut + (0.02 * white)) / 1.02;
+          lastOut = output[i];
+          output[i] *= 3.5;
+        }
+
+        this.rainSource = this.ctx.createBufferSource();
+        this.rainSource.buffer = noiseBuffer;
+        this.rainSource.loop = true;
+
+        const rainFilter = this.ctx.createBiquadFilter();
+        rainFilter.type = "lowpass";
+        rainFilter.frequency.setValueAtTime(800, this.ctx.currentTime);
+
+        this.gainRain = this.ctx.createGain();
+        this.gainRain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+
+        this.rainSource.connect(rainFilter);
+        rainFilter.connect(this.gainRain);
+        this.gainRain.connect(this.gainMaster);
+        this.rainSource.start();
+
+        // Nolan-style Ambient Drone
+        this.droneOsc1 = this.ctx.createOscillator();
+        this.droneOsc2 = this.ctx.createOscillator();
+        this.droneOsc1.type = "sawtooth";
+        this.droneOsc2.type = "sine";
+        this.droneOsc1.frequency.setValueAtTime(55, this.ctx.currentTime); // A1 note
+        this.droneOsc2.frequency.setValueAtTime(55.6, this.ctx.currentTime);
+
+        const droneFilter = this.ctx.createBiquadFilter();
+        droneFilter.type = "lowpass";
+        droneFilter.frequency.setValueAtTime(140, this.ctx.currentTime);
+
+        this.gainDrone = this.ctx.createGain();
+        this.gainDrone.gain.setValueAtTime(0.12, this.ctx.currentTime);
+
+        this.droneOsc1.connect(droneFilter);
+        this.droneOsc2.connect(droneFilter);
+        droneFilter.connect(this.gainDrone);
+        this.gainDrone.connect(this.gainMaster);
+
+        this.droneOsc1.start();
+        this.droneOsc2.start();
+      }
+
+      toggleAudio() {
+        if (!this.ctx) {
+          this.init();
+        }
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+
+        this.isMuted = !this.isMuted;
+        if (this.isMuted) {
+          this.gainMaster.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
+        } else {
+          this.gainMaster.gain.setTargetAtTime(0.75, this.ctx.currentTime, 0.05);
+        }
+        this.updateUI();
+      }
+
+      updateUI() {
+        const dot = document.getElementById("audioStatusDot");
+        const label = document.getElementById("audioLabel");
+        if (this.isMuted) {
+          dot.style.background = "#cf3a3a";
+          label.textContent = "AUDIO: OFF";
+        } else {
+          dot.style.background = "#22c55e";
+          label.textContent = "AUDIO: ACTIVE";
+        }
+      }
+
+      playThunder() {
+        if (this.isMuted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const thunderOsc = this.ctx.createOscillator();
+        const thunderGain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        thunderOsc.type = "triangle";
+        thunderOsc.frequency.setValueAtTime(70, now);
+        thunderOsc.frequency.exponentialRampToValueAtTime(25, now + 1.8);
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(120, now);
+
+        thunderGain.gain.setValueAtTime(0.4, now);
+        thunderGain.gain.exponentialRampToValueAtTime(0.01, now + 2.0);
+
+        thunderOsc.connect(filter);
+        filter.connect(thunderGain);
+        thunderGain.connect(this.gainMaster);
+
+        thunderOsc.start(now);
+        thunderOsc.stop(now + 2.2);
+      }
+
+      playTerminalBeep(freq = 880, dur = 0.08) {
+        if (this.isMuted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(gain);
+        gain.connect(this.gainMaster);
+        osc.start(now);
+        osc.stop(now + dur);
+      }
+
+      playSuccessChord() {
+        if (this.isMuted || !this.ctx) return;
+        [220, 277.18, 329.63, 440].forEach((freq, idx) => {
+          setTimeout(() => this.playTerminalBeep(freq, 0.3), idx * 70);
+        });
+      }
+
+      playKickSound() {
+        if (this.isMuted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.gainMaster);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+    }
+
+    const soundMaster = new GothamAudioManager();
+    document.getElementById("audioToggle").addEventListener("click", () => {
+      soundMaster.toggleAudio();
+    });
+
+    /* =================================================================
+       AMBIENT CANVAS: RAIN & FLASHING THUNDER
+       ================================================================= */
+    const ambCanvas = document.getElementById("ambientCanvas");
+    const ambCtx = ambCanvas.getContext("2d");
+    let rainDrops = [];
+
+    function resizeAmbientCanvas() {
+      ambCanvas.width = window.innerWidth;
+      ambCanvas.height = window.innerHeight;
+      rainDrops = [];
+      for (let i = 0; i < 110; i++) {
+        rainDrops.push({
+          x: Math.random() * ambCanvas.width,
+          y: Math.random() * ambCanvas.height,
+          len: Math.random() * 22 + 10,
+          speed: Math.random() * 8 + 12,
+          opacity: Math.random() * 0.4 + 0.1
+        });
+      }
+    }
+    window.addEventListener("resize", resizeAmbientCanvas);
+    resizeAmbientCanvas();
+
+    let flashAlpha = 0;
+    function renderAmbient() {
+      ambCtx.clearRect(0, 0, ambCanvas.width, ambCanvas.height);
+
+      if (flashAlpha > 0) {
+        ambCtx.fillStyle = `rgba(215, 230, 255, ${flashAlpha})`;
+        ambCtx.fillRect(0, 0, ambCanvas.width, ambCanvas.height);
+        flashAlpha -= 0.03;
+      }
+
+      ambCtx.strokeStyle = "rgba(165, 205, 240, 0.45)";
+      ambCtx.lineWidth = 1;
+      for (let i = 0; i < rainDrops.length; i++) {
+        const d = rainDrops[i];
+        ambCtx.beginPath();
+        ambCtx.moveTo(d.x, d.y);
+        ambCtx.lineTo(d.x - 2, d.y + d.len);
+        ambCtx.stroke();
+
+        d.y += d.speed;
+        d.x -= 1;
+        if (d.y > ambCanvas.height) {
+          d.y = -d.len;
+          d.x = Math.random() * ambCanvas.width;
+        }
+      }
+
+      // Random cinematic thunder flash
+      if (Math.random() < 0.002) {
+        flashAlpha = 0.35;
+        soundMaster.playThunder();
+      }
+
+      requestAnimationFrame(renderAmbient);
+    }
+    renderAmbient();
+
+    /* =================================================================
+       SCENE ROUTING & HUD SYNCHRONIZATION
+       ================================================================= */
+    let currentSceneNum = 1;
+
+    function goToScene(targetSceneNum) {
+      soundMaster.playTerminalBeep(520, 0.05);
+      const activeCurrent = document.querySelector(".scene-viewport.active");
+      if (activeCurrent) {
+        activeCurrent.classList.remove("active");
+      }
+
+      const targetScene = document.getElementById("scene" + targetSceneNum);
+      if (targetScene) {
+        targetScene.classList.add("active");
+        currentSceneNum = targetSceneNum;
+        updateHUDDots(targetSceneNum);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // Scene specific initializations
+        if (targetSceneNum === 5) {
+          initPursuitMiniGame();
+        } else if (targetSceneNum === 8) {
+          executeFinalBirthdaySequence();
+        }
+      }
+    }
+
+    function updateHUDDots(activeNum) {
+      for (let i = 1; i <= 8; i++) {
+        const dot = document.getElementById("dot" + i);
+        if (dot) {
+          if (i <= activeNum) {
+            dot.classList.add("active");
+          } else {
+            dot.classList.remove("active");
+          }
+        }
+      }
+    }
+
+    /* Scene 1 -> 2 */
+    document.getElementById("enterGothamBtn").addEventListener("click", () => {
+      // First user interaction: attempt audio wake up
+      if (soundMaster.isMuted) {
+        soundMaster.toggleAudio();
+      }
+      goToScene(2);
+    });
+
+    /* =================================================================
+       SCENE 2: PASSWORD VALIDATION & SUBTLE HINTS
+       ================================================================= */
+    let passAttempts = 0;
+    const passInput = document.getElementById("passInput");
+    const passFeedback = document.getElementById("passwordFeedback");
+
+    document.getElementById("passwordForm").addEventListener("submit", () => {
+      const entered = passInput.value.trim().toUpperCase();
+      passAttempts++;
+
+      if (entered === CONFIG.correctPassword) {
+        soundMaster.playSuccessChord();
+        passFeedback.style.color = "#22c55e";
+        passFeedback.textContent = "CLEARANCE GRANTED. DECRYPTING BATCAVE SYSTEMS...";
+        setTimeout(() => {
+          goToScene(3);
+        }, 1200);
+      } else {
+        soundMaster.playTerminalBeep(200, 0.2);
+        passFeedback.style.color = "var(--danger)";
+        passFeedback.textContent = `ACCESS DENIED. INVALID CREDENTIALS [CODE: ERR_${passAttempts}]`;
+        passInput.value = "";
+      }
+    });
+
+    document.getElementById("hintTriggerBtn").addEventListener("click", () => {
+      soundMaster.playTerminalBeep(640, 0.06);
+      passFeedback.style.color = "var(--gold-accent)";
+      passFeedback.textContent = "TACTICAL HINT: The vigilante of Gotham. 6 Letters.";
+    });
+
+    /* =================================================================
+       SCENE 3: BATCAVE TERMINAL MODALS
+       ================================================================= */
+    const modalEl = document.getElementById("terminalModal");
+    const modalBodyEl = document.getElementById("modalBody");
+
+    const terminalIntel = {
+      signal: {
+        title: "THE BAT-SIGNAL BEACON",
+        content: `
+          <p style="color:var(--bat-cyan); font-family:var(--font-mono); margin-bottom:15px;">OPTIC PROJECTION: 1,000,000 LUMENS</p>
+          <p style="line-height:1.7; color:#cbd5e1; margin-bottom:15px;">
+            Mounted high above Gotham Central Police Headquarters, this beacon pierces the smog and thunderstorm clouds. It's not just a call; it is a warning to the shadows.
+          </p>
+          <button class="bat-btn" style="width:100%;" onclick="triggerSkyFlash()">PULSE BEACON OVER GOTHAM</button>
+        `
+      },
+      arsenal: {
+        title: "THE ARSENAL PROTOCOL // NORTH LONDON",
+        content: `
+          <p style="color:#ef4444; font-family:var(--font-mono); margin-bottom:15px;">TACTICAL CODE: EMIRATES RED &amp; WHITE</p>
+          <p style="line-height:1.7; color:#cbd5e1; margin-bottom:15px;">
+            Mikel Arteta's doctrine: Non-negotiables, relentless high press, discipline under pressure, and trusting the process. You know what it means to stand by the cannon week after week.
+          </p>
+          <div style="font-family:var(--font-mono); color:var(--gold-accent); font-size:0.85rem; border-left:2px solid #ef4444; padding-left:12px;">
+            "Trust the process. Defend the badge."
+          </div>
+        `
+      },
+      coffee: {
+        title: "THE COFFEE TERMINAL // ICED AMERICANO",
+        content: `
+          <p style="color:var(--gold-accent); font-family:var(--font-mono); margin-bottom:15px;">METABOLIC ACCELERATOR: SUB-ZERO ROAST</p>
+          <p style="line-height:1.7; color:#cbd5e1; margin-bottom:15px;">
+            Espresso pulled directly over ice. No distractions, no unnecessary sugar. Pure, calculated fuel designed to navigate long nights, high stakes, and relentless missions.
+          </p>
+          <button class="bat-btn" style="width:100%;" onclick="unlockEasterEgg('BARISTA INTEL: Double shot cold-brew calibrated.')">CALIBRATE COLD BREW</button>
+        `
+      },
+      garage: {
+        title: "WAYNE GARAGE & MOTOR DIVISION",
+        content: `
+          <p style="color:#a855f7; font-family:var(--font-mono); margin-bottom:15px;">ACTIVE FLEET: COVERT HYUNDAI AURA // DREAM BAVARIAN M-SERIES</p>
+          <p style="line-height:1.7; color:#cbd5e1; margin-bottom:15px;">
+            The Hyundai Aura: trusted, agile, steady on every quiet late-night drive, holding memories in every kilometre. Waiting in the encrypted blueprint bay: the Bavarian ultimate driving machine.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.8rem; color:#94a3b8; border:1px dashed #334155; padding:10px;">
+            STATUS: The road is ready whenever you are.
+          </div>
+        `
+      },
+      classified: {
+        title: "CLASSIFIED DOSSIER // RE: SIDDHARTH",
+        content: `
+          <p style="color:var(--bat-cyan); font-family:var(--font-mono); margin-bottom:15px;">SUBJECT DESIGNATION: THE KNIGHT</p>
+          <p style="line-height:1.7; color:#cbd5e1; margin-bottom:15px;">
+            Quiet resilience. High standards. Unflinching dedication. Even when the world gets chaotic, this operative remains the rock on which everything stands.
+          </p>
+          <div style="font-family:var(--font-mono); color:var(--gold-accent); font-size:0.85rem;">
+            ACCESS CODE ACCEPTED: 11.11.1989
+          </div>
+        `
+      }
+    };
+
+    function openTerminal(termKey) {
+      soundMaster.playTerminalBeep(700, 0.08);
+      const data = terminalIntel[termKey];
+      if (!data) return;
+      modalBodyEl.innerHTML = `
+        <h2 style="font-family:var(--font-cinzel); color:var(--gold-accent); font-size:1.4rem; margin-bottom:10px;">${data.title}</h2>
+        ${data.content}
+      `;
+      modalEl.classList.add("open");
+    }
+
+    function closeModal() {
+      soundMaster.playTerminalBeep(450, 0.05);
+      modalEl.classList.remove("open");
+    }
+
+    function triggerSkyFlash() {
+      flashAlpha = 0.7;
+      soundMaster.playThunder();
+      unlockEasterEgg("BAT-SIGNAL LIT OVER GOTHAM SKIES");
+      closeModal();
+    }
+
+    document.getElementById("proceedToDetectiveBtn").addEventListener("click", () => {
+      goToScene(4);
+    });
+
+    /* =================================================================
+       SCENE 4: DETECTIVE MODE LOGIC
+       ================================================================= */
+    function solveDetectiveChallenge1(choice) {
+      const fb = document.getElementById("detectiveFeedback1");
+      if (choice === 2) {
+        soundMaster.playSuccessChord();
+        fb.style.color = "#22c55e";
+        fb.textContent = "OPTICS VERIFIED: NOLAN-ERA CREST CONFIRMED.";
+        document.getElementById("step1Indicator").classList.add("done");
+        setTimeout(() => {
+          document.getElementById("challenge1Box").style.display = "none";
+          document.getElementById("challenge2Box").style.display = "block";
+          document.getElementById("step2Indicator").classList.add("active");
+        }, 1000);
+      } else {
+        soundMaster.playTerminalBeep(220, 0.15);
+        fb.style.color = "var(--danger)";
+        fb.textContent = "MISMATCH DETECTED. THAT CREST BELONGS TO ANOTHER CONTINUITY.";
+      }
+    }
+
+    function solveDetectiveChallenge2() {
+      const val = document.getElementById("cipherInput").value.trim().toUpperCase();
+      const fb = document.getElementById("detectiveFeedback2");
+      // "OJHIU" shifted by -1 is "NIGHT"
+      if (val === "NIGHT") {
+        soundMaster.playSuccessChord();
+        fb.style.color = "#22c55e";
+        fb.textContent = "CIPHER BROKEN: 'NIGHT' VERIFIED.";
+        document.getElementById("step2Indicator").classList.add("done");
+        setTimeout(() => {
+          document.getElementById("challenge2Box").style.display = "none";
+          document.getElementById("challenge3Box").style.display = "block";
+          document.getElementById("step3Indicator").classList.add("active");
+        }, 1000);
+      } else {
+        soundMaster.playTerminalBeep(220, 0.15);
+        fb.style.color = "var(--danger)";
+        fb.textContent = "DECRYPTION FAILED. HINT: O->N, J->I, H->G...";
+      }
+    }
+
+    function detectiveObjectClick(e) {
+      const batarang = document.getElementById("hiddenTargetBatarang");
+      const rect = batarang.getBoundingClientRect();
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+
+      if (clickX >= rect.left && clickX <= rect.right && clickY >= rect.top && clickY <= rect.bottom) {
+        soundMaster.playSuccessChord();
+        batarang.style.opacity = "1";
+        batarang.style.transform = "scale(1.5)";
+        document.getElementById("detectiveFeedback3").style.color = "#22c55e";
+        document.getElementById("detectiveFeedback3").textContent = "TACTICAL ASSET RECOVERED. DETECTIVE MODE COMPLETE.";
+        document.getElementById("step3Indicator").classList.add("done");
+
+        setTimeout(() => {
+          goToScene(5);
+        }, 1200);
+      } else {
+        soundMaster.playTerminalBeep(330, 0.05);
+        document.getElementById("detectiveFeedback3").textContent = "SCAN MISSED. SEARCH THE SHADOWS NEAR THE RIGHT LEDGE.";
+      }
+    }
+
+    /* =================================================================
+       SCENE 5: MINI-GAME (ESCAPE THROUGH GOTHAM)
+       ================================================================= */
+    const gCanvas = document.getElementById("gameCanvas");
+    const gCtx = gCanvas.getContext("2d");
+    let gameLoopId = null;
+    let playerVehicle = { x: 220, y: 300, w: 40, h: 50, speed: 7 };
+    let obstacles = [];
+    let tokens = [];
+    let tokensCollected = 0;
+    let gameSpeed = 3.5;
+    let isGameRunning = false;
+    let keys = {};
+
+    window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+    document.getElementById("touchLeftBtn").addEventListener("pointerdown", () => { keys["ArrowLeft"] = true; });
+    document.getElementById("touchLeftBtn").addEventListener("pointerup", () => { keys["ArrowLeft"] = false; });
+    document.getElementById("touchRightBtn").addEventListener("pointerdown", () => { keys["ArrowRight"] = true; });
+    document.getElementById("touchRightBtn").addEventListener("pointerup", () => { keys["ArrowRight"] = false; });
+
+    document.getElementById("startPursuitBtn").addEventListener("click", () => {
+      initPursuitMiniGame();
+    });
+
+    function initPursuitMiniGame() {
+      if (gameLoopId) cancelAnimationFrame(gameLoopId);
+      tokensCollected = 0;
+      gameSpeed = 3.5;
+      playerVehicle.x = gCanvas.width / 2 - 20;
+      obstacles = [];
+      tokens = [];
+      isGameRunning = true;
+      document.getElementById("gameScoreLabel").textContent = "TOKENS: 0 / 5";
+      document.getElementById("gameSpeedLabel").textContent = "SPEED: 100 KM/H";
+      pursuitLoop();
+    }
+
+    function pursuitLoop() {
+      if (!isGameRunning) return;
+
+      // Handle Vehicle Movement
+      if ((keys["ArrowLeft"] || keys["a"] || keys["A"]) && playerVehicle.x > 30) {
+        playerVehicle.x -= playerVehicle.speed;
+      }
+      if ((keys["ArrowRight"] || keys["d"] || keys["D"]) && playerVehicle.x < gCanvas.width - 30 - playerVehicle.w) {
+        playerVehicle.x += playerVehicle.speed;
+      }
+
+      // Spawn Obstacles
+      if (Math.random() < 0.025) {
+        obstacles.push({
+          x: Math.random() * (gCanvas.width - 100) + 40,
+          y: -40,
+          w: 36,
+          h: 36,
+          type: "barrier"
+        });
+      }
+
+      // Spawn Tokens
+      if (Math.random() < 0.02) {
+        tokens.push({
+          x: Math.random() * (gCanvas.width - 100) + 40,
+          y: -30,
+          r: 12
+        });
+      }
+
+      // Clear & Draw Road
+      gCtx.fillStyle = "#090d14";
+      gCtx.fillRect(0, 0, gCanvas.width, gCanvas.height);
+
+      // Road Borders
+      gCtx.fillStyle = "#1e293b";
+      gCtx.fillRect(20, 0, 8, gCanvas.height);
+      gCtx.fillRect(gCanvas.width - 28, 0, 8, gCanvas.height);
+
+      // Dashed Centre Line
+      gCtx.strokeStyle = "rgba(197, 160, 89, 0.4)";
+      gCtx.setLineDash([20, 15]);
+      gCtx.beginPath();
+      gCtx.moveTo(gCanvas.width / 2, 0);
+      gCtx.lineTo(gCanvas.width / 2, gCanvas.height);
+      gCtx.stroke();
+      gCtx.setLineDash([]);
+
+      // Update & Draw Obstacles
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        obs.y += gameSpeed;
+
+        gCtx.fillStyle = "#dc2626";
+        gCtx.fillRect(obs.x, obs.y, obs.w, obs.h);
+        gCtx.fillStyle = "#fca5a5";
+        gCtx.fillRect(obs.x + 4, obs.y + 4, obs.w - 8, obs.h - 8);
+
+        // Collision Check
+        if (
+          playerVehicle.x < obs.x + obs.w &&
+          playerVehicle.x + playerVehicle.w > obs.x &&
+          playerVehicle.y < obs.y + obs.h &&
+          playerVehicle.y + playerVehicle.h > obs.y
+        ) {
+          // Crash
+          soundMaster.playTerminalBeep(180, 0.3);
+          isGameRunning = false;
+          gCtx.fillStyle = "rgba(0,0,0,0.85)";
+          gCtx.fillRect(0, 0, gCanvas.width, gCanvas.height);
+          gCtx.fillStyle = "#ef4444";
+          gCtx.font = "18px 'Share Tech Mono'";
+          gCtx.textAlign = "center";
+          gCtx.fillText("TUMBLER DAMAGE CRITICAL // RESTARTING", gCanvas.width / 2, gCanvas.height / 2);
+          setTimeout(() => initPursuitMiniGame(), 1500);
+          return;
+        }
+
+        if (obs.y > gCanvas.height) obstacles.splice(i, 1);
+      }
+
+      // Update & Draw Tokens
+      for (let i = tokens.length - 1; i >= 0; i--) {
+        const tok = tokens[i];
+        tok.y += gameSpeed;
+
+        gCtx.fillStyle = "var(--bat-cyan)";
+        gCtx.beginPath();
+        gCtx.arc(tok.x, tok.y, tok.r, 0, Math.PI * 2);
+        gCtx.fill();
+
+        // Token Collection Check
+        const dist = Math.hypot((playerVehicle.x + playerVehicle.w / 2) - tok.x, (playerVehicle.y + playerVehicle.h / 2) - tok.y);
+        if (dist < tok.r + playerVehicle.w / 2) {
+          tokensCollected++;
+          soundMaster.playTerminalBeep(950, 0.08);
+          tokens.splice(i, 1);
+          document.getElementById("gameScoreLabel").textContent = `TOKENS: ${tokensCollected} / 5`;
+
+          if (tokensCollected >= 5) {
+            soundMaster.playSuccessChord();
+            isGameRunning = false;
+            gCtx.fillStyle = "rgba(0,0,0,0.85)";
+            gCtx.fillRect(0, 0, gCanvas.width, gCanvas.height);
+            gCtx.fillStyle = "#22c55e";
+            gCtx.font = "20px 'Cinzel'";
+            gCtx.textAlign = "center";
+            gCtx.fillText("MISSION TOKENS SECURED", gCanvas.width / 2, gCanvas.height / 2);
+            setTimeout(() => goToScene(6), 1400);
+            return;
+          }
+        }
+
+        if (tok.y > gCanvas.height) tokens.splice(i, 1);
+      }
+
+      // Draw Player Tumbler
+      gCtx.fillStyle = "#020617";
+      gCtx.fillRect(playerVehicle.x, playerVehicle.y, playerVehicle.w, playerVehicle.h);
+      gCtx.fillStyle = "var(--gold-accent)";
+      // Headlights
+      gCtx.fillRect(playerVehicle.x + 4, playerVehicle.y, 6, 8);
+      gCtx.fillRect(playerVehicle.x + playerVehicle.w - 10, playerVehicle.y, 6, 8);
+      // Windshield
+      gCtx.fillStyle = "#38bdf8";
+      gCtx.fillRect(playerVehicle.x + 8, playerVehicle.y + 14, playerVehicle.w - 16, 12);
+
+      gameSpeed += 0.0008;
+      document.getElementById("gameSpeedLabel").textContent = `SPEED: ${Math.floor(gameSpeed * 28)} KM/H`;
+
+      gameLoopId = requestAnimationFrame(pursuitLoop);
+    }
+
+    /* =================================================================
+       SCENE 6: ARSENAL PENALTY SHOOTOUT
+       ================================================================= */
+    let penaltyAttempt = 0;
+    let penaltyGoals = 0;
+
+    function takePenalty(direction) {
+      if (penaltyAttempt >= 3) return;
+      penaltyAttempt++;
+      soundMaster.playKickSound();
+
+      const ball = document.getElementById("shootBall");
+      const gk = document.getElementById("gkElement");
+      const fb = document.getElementById("shootFeedback");
+
+      // Goalkeeper random dive: 'left', 'center', or 'right'
+      const gkChoices = ['left', 'center', 'right'];
+      const gkDive = gkChoices[Math.floor(Math.random() * gkChoices.length)];
+
+      // Position Keeper
+      if (gkDive === 'left') gk.style.left = "25%";
+      else if (gkDive === 'right') gk.style.left = "75%";
+      else gk.style.left = "50%";
+
+      // Animate Ball
+      let ballTargetX = "50%";
+      let ballTargetY = "30px";
+      if (direction === 'left') ballTargetX = "15%";
+      if (direction === 'right') ballTargetX = "85%";
+
+      ball.style.left = ballTargetX;
+      ball.style.bottom = "120px";
+      ball.style.transform = "scale(0.65)";
+
+      setTimeout(() => {
+        if (direction !== gkDive) {
+          // Goal scored
+          penaltyGoals++;
+          soundMaster.playSuccessChord();
+          fb.style.color = "#22c55e";
+          fb.textContent = "GOAL! PURE QUALITY INTO THE TOP CORNER!";
+        } else {
+          // Saved
+          soundMaster.playTerminalBeep(220, 0.2);
+          fb.style.color = "var(--danger)";
+          fb.textContent = "SAVED BY THE KEEPER! FINE MARGINS.";
+        }
+
+        document.getElementById("shootAttemptsLabel").textContent = `ATTEMPT: ${penaltyAttempt} / 3`;
+        document.getElementById("shootScoreLabel").textContent = `GOALS: ${penaltyGoals}`;
+
+        // Reset ball for next attempt
+        setTimeout(() => {
+          if (penaltyAttempt < 3) {
+            ball.style.left = "50%";
+            ball.style.bottom = "15px";
+            ball.style.transform = "translateX(-50%) scale(1)";
+            gk.style.left = "50%";
+            fb.style.color = "#94a3b8";
+            fb.textContent = "CHOOSE YOUR NEXT TARGET ANGLE";
+          } else {
+            // Shootout complete
+            document.getElementById("shootTargetsContainer").style.display = "none";
+            document.getElementById("arsenalQuoteReveal").style.display = "block";
+          }
+        }, 1000);
+      }, 500);
+    }
+
+    /* =================================================================
+       SCENE 7: MEMORY ARCHIVES (DECLASSIFIED LOGS - NO PHOTOS)
+       ================================================================= */
+    const logData = {
+      1: {
+        title: "LOG #1989: THE ARRIVAL",
+        text: "CLASSIFIED DOSSIER 1989. An operative was introduced into this timeline whose stubborn determination and big vision would define everything. Not all heroes announce themselves with grand declarations; some are forged quietly, building consistency day after day."
+      },
+      2: {
+        title: "LOG #0400: THE ROAD SURVEILLANCE",
+        text: "SURVEILLANCE REPORT: Hyundai Aura highway sweeps. Observations confirm countless miles, late hours, quiet conversations, tired eyes after endless demands, yet always extending a hand across the console. True chivalry without an audience."
+      },
+      3: {
+        title: "LOG #0007: THE SECRET AGENT CONVERSATION",
+        text: "COMMUNICATION PROTOCOL ANALYSIS: Operative communicates with tactical brevity—classic agent persona. But under the quiet exterior lies unyielding loyalty. When he looks at the one he loves, the agent dissolves and the genuine knight is revealed."
+      }
+    };
+
+    function viewArchiveLog(id) {
+      soundMaster.playTerminalBeep(600, 0.06);
+      const display = document.getElementById("archiveLogDisplay");
+      const title = document.getElementById("archiveLogTitle");
+      const text = document.getElementById("archiveLogText");
+
+      title.textContent = logData[id].title;
+      text.textContent = logData[id].text;
+      display.style.display = "block";
+    }
+
+    /* =================================================================
+       SCENE 8: FINAL REVEAL & PERSONAL LETTER GRADUAL SEQUENCING
+       ================================================================= */
+    function executeFinalBirthdaySequence() {
+      const seqIds = ["seq1", "seq2", "seq3", "seq4", "seq5", "seq6", "seq7"];
+      seqIds.forEach((id, idx) => {
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.classList.add("revealed");
+            soundMaster.playTerminalBeep(520 + (idx * 40), 0.1);
+          }
+        }, (idx + 1) * 800);
+      });
+
+      // Reveal the complete personal letter after sequences
+      setTimeout(() => {
+        const letter = document.getElementById("personalLetterCard");
+        letter.style.display = "block";
+        letter.style.opacity = "0";
+        letter.style.transition = "opacity 1.5s ease";
+        setTimeout(() => {
+          letter.style.opacity = "1";
+          soundMaster.playSuccessChord();
+        }, 50);
+      }, (seqIds.length + 1) * 820);
+    }
+
+    function replayEntireMission() {
+      soundMaster.playTerminalBeep(440, 0.1);
+      // Reset variables
+      passAttempts = 0;
+      penaltyAttempt = 0;
+      penaltyGoals = 0;
+      tokensCollected = 0;
+
+      // Reset forms & buttons
+      document.getElementById("passInput").value = "";
+      document.getElementById("passwordFeedback").textContent = "";
+      document.getElementById("shootTargetsContainer").style.display = "flex";
+      document.getElementById("arsenalQuoteReveal").style.display = "none";
+      document.getElementById("shootBall").style.left = "50%";
+      document.getElementById("shootBall").style.bottom = "15px";
+      document.getElementById("shootBall").style.transform = "translateX(-50%) scale(1)";
+
+      // Reset sequences
+      ["seq1", "seq2", "seq3", "seq4", "seq5", "seq6", "seq7"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("revealed");
+      });
+      document.getElementById("personalLetterCard").style.display = "none";
+
+      goToScene(1);
+    }
+
+    /* =================================================================
+       5 INTERACTIVE EASTER EGGS
+       ================================================================= */
+    let easterEggsFound = 0;
+
+    function unlockEasterEgg(msg) {
+      easterEggsFound++;
+      soundMaster.playSuccessChord();
+      const alertBox = document.getElementById("eggAlert");
+      alertBox.textContent = `EASTER EGG #${easterEggsFound}: ${msg}`;
+      alertBox.classList.add("show");
+      setTimeout(() => {
+        alertBox.classList.remove("show");
+      }, 3500);
+    }
+
+    // Easter Egg 1: Click the interactive Bat-Signal in Scene 1
+    document.getElementById("interactiveSignal").addEventListener("click", () => {
+      unlockEasterEgg("BAT-SIGNAL SKYSCRAPER OVERRIDE ACCESSED!");
+      flashAlpha = 0.8;
+      soundMaster.playThunder();
+    });
+
+    // Easter Egg 2: Double Click the HUD "PROTOCOL" text
+    document.querySelector(".mission-hud div").addEventListener("dblclick", () => {
+      unlockEasterEgg("ALFRED'S DIRECT FREQUENCY: 'Do take care, Master Siddharth.'");
+    });
+
+    // Easter Egg 3: Secret Keyboard Command (Press 'B' anytime)
+    window.addEventListener("keydown", (e) => {
+      if ((e.key === "b" || e.key === "B") && currentSceneNum !== 2) {
+        unlockEasterEgg("WAYNE SATELLITE COMMS PING: Gotham is watching.");
+      }
+    });
+
+    // Easter Egg 4: Triple click on the hero photograph frame in final reveal
+    document.getElementById("heroPhotoWrapper").addEventListener("dblclick", () => {
+      unlockEasterEgg("THE BATCAVE MEMORY VAULT: 'He is the hero Gotham deserves.'");
+    });
+
+    // Easter Egg 5: Click the classified red stamp in the Memory Archive
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.classList.contains("classified-stamp")) {
+        unlockEasterEgg("ARSÈNE WENGER & ARTETA ARCHIVE: 'Victoria Concordia Crescit.'");
+      }
+    });
+  </script>
+</body>
+</html>
